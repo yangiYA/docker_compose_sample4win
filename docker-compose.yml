@@ -90,3 +90,23 @@ services:
           #  HOST_OR_VM:DOCKER_CONTAINER
 
       command: tail -f /dev/null
+
+  ### Redis server ###
+  myredis01:
+      restart: always
+      image:         redis:3-alpine
+      # https://hub.docker.com/_/redis/
+      # Dockerfile : https://github.com/docker-library/redis/blob/master/3.2/alpine/Dockerfile
+
+      container_name: myredis_01
+
+      volumes:
+        - ./myredis01/data:/data
+        - ./myredis01/etc/redis:/usr/local/etc/redis/
+
+      ports:
+          - "16379:6379"
+          #  HOST:CONTAINER
+
+      command: redis-server /usr/local/etc/redis/redis.conf
+
