@@ -1,0 +1,7 @@
+if [ ! -e ./mysmtp/fakeSMTP.jar ]; then
+  curl http://nilhcem.github.com/FakeSMTP/downloads/fakeSMTP-latest.zip -L -O
+  unzip fakeSMTP-latest.zip
+  mkdir -p mysmtp
+  mv fakeSMTP*.jar ./mysmtp/fakeSMTP.jar
+  rm fakeSMTP-latest.zip
+fi

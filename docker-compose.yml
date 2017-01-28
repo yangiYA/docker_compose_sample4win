@@ -1,0 +1,92 @@
+version: '2'
+services:
+
+  ### SFTP Serter ###
+  mysftp01:
+      image: atmoz/sftp:alpine
+      # https://hub.docker.com/r/atmoz/sftp/ 
+      # Dockerfile : https://github.com/atmoz/sftp/blob/alpine/Dockerfile
+
+      container_name: mysftp_01
+
+      volumes:
+          - ${BASE_DIR}/mysftp/home/user/share:/home/${SFTP_USER}/share
+          - ${BASE_DIR}/mysftp/sshkeys/id_rsa.pub:/home/${SFTP_USER}/.ssh/keys/id_rsa.pub:ro
+      ports:
+          #  HOST_OR_VM:DOCKER_CONTAINER
+          - "${HOST_SFTP_PORT}:22"
+
+      # command: user        :pass[:e][:uid[:gid]]
+      command: "${SFTP_USER}:123:1001"
+
+
+  ### DB server (mysql) ###
+  mymysql01:
+      restart:       always
+      # https://hub.docker.com/_/mysql/
+      image:         mysql:5.6
+      # Dockerfile : https://github.com/docker-library/mysql/blob/master/5.6/Dockerfile
+      #image:         mysql:5.7
+      # Dockerfile : https://github.com/docker-library/mysql/blob/master/5.7/Dockerfile
+
+      container_name: mysql_01
+
+      volumes:
+          - ${BASE_DIR}/mymysql01/var/lib/mysql:/var/lib/mysql
+          - ${BASE_DIR}/mymysql01/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+          - ${BASE_DIR}/mymysql01/import:/import
+
+      ports:
+          #  HOST_OR_VM:DOCKER_CONTAINER
+          - 13306:3306
+
+      environment:
+          MYSQL_ROOT_PASSWORD : pass
+          MYSQL_DATABASE      : mydb
+          MYSQL_USER          : mysqluser
+          MYSQL_PASSWORD      : mysqlpass
+
+      command:
+           - "mysqld"
+           - "--character-set-server=utf8"
+           - "--lower_case_table_names=1"
+           - "--character_set_client=utf8"
+
+
+  ### AP server ###
+  mytomcat01:
+      image: tomcat:8.5-alpine
+      #image: tomcat:9.0-alpine
+      # https://hub.docker.com/_/tomcat/ 
+      # Dockerfile : https://github.com/docker-library/tomcat/blob/master/8.0/jre8-alpine/Dockerfile
+
+      container_name: tomcat_01
+
+      volumes:
+           - ${BASE_DIR}/mytomcat01/usr/local/tomcat/logs:/usr/local/tomcat/logs
+           # if your war put webapps.
+           #- ${BASE_DIR}/mytomcat01/usr/local/tomcat/webapps/myapp.war:/usr/local/tomcat/webapps/myapp.war
+      ports:
+          #  HOST_OR_VM:DOCKER_CONTAINER
+          - 18080:8080
+
+
+  ### java Batch server ###
+  myjava01:
+      image:         openjdk:8-jdk-alpine
+      # https://hub.docker.com/_/java/
+      # Dockerfile : https://github.com/docker-library/openjdk/blob/master/8-jdk/alpine/Dockerfile
+
+      container_name: java_01
+
+      volumes:
+          - ${BASE_DIR}/myjava01/home/batchuser/bin:/home/batchuser/bin
+          - ${BASE_DIR}/myjava01/var_log/batchuser:/var/log/batchuser
+          - ${BASE_DIR}/mysftp/sshkeys/id_rsa:/home/batchuser/.ssh/id_rsa:ro
+
+      working_dir: /home/batchuser/bin
+
+#      ports:
+          #  HOST_OR_VM:DOCKER_CONTAINER
+
+      command: tail -f /dev/null
